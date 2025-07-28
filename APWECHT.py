@@ -38,21 +38,25 @@ elif menu == "Send Money":
     message = st.text_input("Optional message")
     if st.button("Send"):
         st.success(f"{amount} SAR sent to {recipient}!")
+
 elif menu == "QR Pay":
     st.title("QR Pay")
     st.write("🚧 Demo: QR Scan feature coming soon!")
     st.write("Show your QR or scan merchant QR to pay.")
+
 elif menu == "Bill Pay":
     st.title("Bill Pay")
     biller = st.selectbox("Select Biller", ["Mobily", "STC", "Electricity"])
     bill_amount = st.number_input("Bill Amount (SAR)", min_value=1, step=1)
     if st.button("Pay Bill"):
         st.success(f"Bill of {bill_amount} SAR paid to {biller}!")
+
 elif menu == "Rewards":
     st.title("Rewards Center")
     st.metric("Current Points", reward_points)
     st.write("Earn more points by paying bills, sending money, and using QR Pay.")
     st.warning("Redeem feature coming soon!")
+
 elif menu == "Profile":
     st.title("Profile")
     st.write("Name: Ahmed")
@@ -60,4 +64,3 @@ elif menu == "Profile":
     st.write("Language: Arabic/English")
     st.write("KYC Status: Verified")
     st.write("For help, contact support@superwallet.sa")
-
