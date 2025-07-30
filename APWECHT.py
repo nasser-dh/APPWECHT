@@ -122,6 +122,7 @@ def show_mini_app():
     app = st.session_state["selected_mini_app"]
     st.markdown('<div class="wallet-card">', unsafe_allow_html=True)
     st.header(f"{mini_apps.get(app, '🚀')} {app}")
+    # --- Chat Mini-App ---
     if app == _("Chat", "محادثة"):
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
         for chat in st.session_state["chat_history"]:
@@ -149,6 +150,47 @@ def show_mini_app():
         st.markdown(
             "<div style='height:20px;'></div>", unsafe_allow_html=True
         )
+    # --- Food Mini-App ---
+    elif app == _("Food Delivery", "توصيل طعام"):
+        st.subheader(_("Order Food", "طلب طعام"))
+        menu_items = [
+            {"name": _("Burger", "برجر"), "price": 20},
+            {"name": _("Pizza", "بيتزا"), "price": 30},
+            {"name": _("Shawarma", "شاورما"), "price": 15},
+            {"name": _("Salad", "سلطة"), "price": 10},
+        ]
+        food_choice = st.selectbox(_("Choose an item", "اختر صنفاً"), [f"{item['name']} - {item['price']} SAR" for item in menu_items])
+        qty = st.number_input(_("Quantity", "الكمية"), min_value=1, max_value=10, step=1)
+        if st.button(_("Order Now", "اطلب الآن")):
+            item_name = food_choice.split(" - ")[0]
+            price = int(food_choice.split(" - ")[1].split()[0])
+            total = price * qty
+            if total > st.session_state["wallet_balance"]:
+                st.error(_("Insufficient balance!", "الرصيد غير كافٍ!"))
+            else:
+                st.session_state["wallet_balance"] -= total
+                st.session_state["transactions"].insert(0, {
+                    "name": item_name,
+                    "type": _("Food Order", "طلب طعام"),
+                    "amount": -total,
+                    "date": _("Now", "الآن"),
+                })
+                st.session_state["reward_points"] += qty
+                st.success(_(f"Ordered {qty} {item_name}(s) for {total} SAR!", f"تم طلب {qty} {item_name} بمبلغ {total} ر.س!"))
+    # --- Transport Mini-App ---
+    elif app == _("Transport", "مواصلات"):
+        st.subheader(_("Choose a Transport App", "اختر تطبيق مواصلات"))
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("[![Uber](https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png)](https://www.uber.com/sa/ar/)", unsafe_allow_html=True)
+            if st.button("Open Uber"):
+                st.markdown('<meta http-equiv="refresh" content="0; url=https://www.uber.com/sa/ar/">', unsafe_allow_html=True)
+        with col2:
+            st.markdown("[![Careem](https://logos-world.net/wp-content/uploads/2022/03/Careem-Logo.png)](https://www.careem.com/)", unsafe_allow_html=True)
+            if st.button("Open Careem"):
+                st.markdown('<meta http-equiv="refresh" content="0; url=https://www.careem.com/">', unsafe_allow_html=True)
+        st.info(_("Tap an icon above to open the app in your browser.", "اضغط على أيقونة لفتح التطبيق في المتصفح."))
+    # --- Shopping, Gov, Mobile Recharge ---
     else:
         st.info(_("This mini-app is coming soon!", "هذا التطبيق المصغر قادم قريباً!"))
     if st.button(_("Back to Home", "عودة للرئيسية")):
@@ -282,20 +324,4 @@ elif menu == _("Request Payment", "طلب دفعة"):
 
 # ---- REWARDS ----
 elif menu == _("Rewards", "مكافآت"):
-    st.markdown('<div class="wallet-card">', unsafe_allow_html=True)
-    st.title(_("Rewards Center", "مركز المكافآت"))
-    st.metric(_("Current Points", "النقاط الحالية"), st.session_state["reward_points"])
-    st.write(_("Earn more points by paying bills, sending money, and using QR Pay.", "اكسب المزيد من النقاط عبر دفع الفواتير والتحويل والدفع بالرمز."))
-    st.warning(_("Redeem feature coming soon!", "ميزة الاسترداد قادمة قريباً!"))
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# ---- PROFILE ----
-elif menu == _("Profile", "الملف الشخصي"):
-    st.markdown('<div class="wallet-card">', unsafe_allow_html=True)
-    st.title(_("Profile", "الملف الشخصي"))
-    st.write(f"{_('Name', 'الاسم')}: Ahmed")
-    st.write(f"{_('Phone', 'رقم الجوال')}: +966 5xxxxxxx")
-    st.write(f"{_('Language', 'اللغة')}: {st.session_state['lang']}")
-    st.write(f"{_('KYC Status', 'التحقق')}: {_('Verified', 'موثق')}")
-    st.write(f"{_('For help, contact', 'للدعم تواصل عبر')}: support@superwallet.sa")
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.mark
