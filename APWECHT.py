@@ -1,66 +1,80 @@
 import streamlit as st
 
-# Dummy data
-wallet_balance = 3280
-transactions = [
-    {"name": "Zaid", "type": "Send Money", "amount": -50, "date": "1 min ago"},
-    {"name": "Mobily", "type": "Bill Paid", "amount": -115, "date": "2 hr ago"},
-    {"name": "Ahmad", "type": "Received Money", "amount": 200, "date": "Today"},
-]
-reward_points = 220
-contacts = ["Ahmad", "Zaid", "Mona"]
+st.set_page_config(page_title="Wallet", layout="centered")
 
-# Sidebar Menu
-st.sidebar.title("Menu")
-menu = st.sidebar.radio("Go to", ["Home", "Send Money", "QR Pay", "Bill Pay", "Rewards", "Profile"])
+# Colors for WeChat/clean style
+BG = "#f6f8fa"         # almost white background
+PRIMARY = "#1d4b8f"    # main blue
+CARD = "#fff"          # card background
 
-if menu == "Home":
-    st.title("Welcome, Ahmed! 👋")
-    st.subheader(f"Wallet Balance: {wallet_balance:,} SAR")
-    st.markdown("#### Quick Actions")
-    col1, col2, col3, col4, col5 = st.columns(5)
-    col1.button("Send Money")
-    col2.button("QR Pay")
-    col3.button("Bill Pay")
-    col4.button("Top-Up")
-    col5.button("Rewards")
-    
-    st.markdown("### Recent Transactions")
-    for t in transactions:
-        st.write(f"**{t['name']}** — {t['type']} : {t['amount']} SAR ({t['date']})")
-    
-    st.info(f"🏅 Rewards Points: {reward_points}")
+st.markdown(
+    f"""
+    <style>
+        .main {{
+            background-color: {BG};
+        }}
+        .wallet-card {{
+            background: {CARD};
+            border-radius: 22px;
+            padding: 30px 24px 20px 24px;
+            margin-bottom: 22px;
+            box-shadow: 0 4px 16px #dde2ec38;
+        }}
+        .action-btn {{
+            background: {PRIMARY};
+            color: #fff !important;
+            border: none;
+            border-radius: 15px;
+            padding: 16px 0;
+            font-size: 17px;
+            font-weight: 600;
+            width: 100%;
+            margin-bottom: 12px;
+            transition: box-shadow .2s;
+            box-shadow: 0 2px 8px #b5c7e644;
+        }}
+        .action-btn:hover {{
+            box-shadow: 0 4px 20px #b5c7e699;
+        }}
+        .balance-label {{
+            color: #888;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }}
+        .balance-value {{
+            color: {PRIMARY};
+            font-size: 33px;
+            font-weight: bold;
+            margin-bottom: 18px;
+        }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
-elif menu == "Send Money":
-    st.title("Send Money")
-    recipient = st.selectbox("Select Recipient", contacts)
-    amount = st.number_input("Amount (SAR)", min_value=1, step=1)
-    message = st.text_input("Optional message")
-    if st.button("Send"):
-        st.success(f"{amount} SAR sent to {recipient}!")
+st.markdown('<div class="wallet-card">', unsafe_allow_html=True)
+st.markdown('<div class="balance-label">Available Balance</div>', unsafe_allow_html=True)
+st.markdown('<div class="balance-value">3,280 SAR</div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-elif menu == "QR Pay":
-    st.title("QR Pay")
-    st.write("🚧 Demo: QR Scan feature coming soon!")
-    st.write("Show your QR or scan merchant QR to pay.")
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.markdown(f'<button class="action-btn">Send</button>', unsafe_allow_html=True)
+with col2:
+    st.markdown(f'<button class="action-btn">Pay</button>', unsafe_allow_html=True)
+with col3:
+    st.markdown(f'<button class="action-btn">Top Up</button>', unsafe_allow_html=True)
 
-elif menu == "Bill Pay":
-    st.title("Bill Pay")
-    biller = st.selectbox("Select Biller", ["Mobily", "STC", "Electricity"])
-    bill_amount = st.number_input("Bill Amount (SAR)", min_value=1, step=1)
-    if st.button("Pay Bill"):
-        st.success(f"Bill of {bill_amount} SAR paid to {biller}!")
-
-elif menu == "Rewards":
-    st.title("Rewards Center")
-    st.metric("Current Points", reward_points)
-    st.write("Earn more points by paying bills, sending money, and using QR Pay.")
-    st.warning("Redeem feature coming soon!")
-
-elif menu == "Profile":
-    st.title("Profile")
-    st.write("Name: Ahmed")
-    st.write("Phone: +966 5xxxxxxx")
-    st.write("Language: Arabic/English")
-    st.write("KYC Status: Verified")
-    st.write("For help, contact support@superwallet.sa")
+st.markdown('<br>', unsafe_allow_html=True)
+st.markdown("### Recent Transactions")
+for name, typ, amt, dt in [
+    ("Zaid", "Send Money", "-50", "1 min ago"),
+    ("Mobily", "Bill Paid", "-115", "2 hr ago"),
+    ("Ahmad", "Received Money", "+200", "Today"),
+]:
+    st.markdown(
+        f'<div style="background:#fff;border-radius:16px;padding:11px 18px;margin-bottom:10px;box-shadow:0 1px 6px #e6e6e644;">'
+        f'<b>{name}</b> <span style="color:#888;">{typ}</span> <span style="float:right;color:{PRIMARY};">{amt} SAR</span>'
+        f'<br><span style="color:#ccc;font-size:13px;">{dt}</span></div>',
+        unsafe_allow_html=True
+    )
