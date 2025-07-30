@@ -10,7 +10,6 @@ PRIMARY = "#1aad19"   # WeChat green, can change to blue for Saudi
 BG = "#f7f8fa"
 CARD = "#fff"
 
-# Custom styles
 st.markdown(
     f"""
     <style>
@@ -124,9 +123,6 @@ services = [
     {"name": "Rewards", "icon": "🎁", "nav": "rewards"},
 ]
 
-nav_map = {s["nav"]: s for s in services}
-
-# --------------- BOTTOM NAV BAR (WeChat Style) ---------------
 nav_items = [
     {"nav": "home", "icon": "🏠", "label": "Home"},
     {"nav": "chat", "icon": "💬", "label": "Chat"},
@@ -145,7 +141,6 @@ st.markdown(bottom_nav_html, unsafe_allow_html=True)
 def goto(nav):
     st.session_state["nav"] = nav
 
-# --------------- NAVIGATION LOGIC (SIMULATE PAGES) ---------------
 params = st.experimental_get_query_params()
 if "nav" in params and params["nav"][0] in [i["nav"] for i in nav_items]:
     st.session_state["nav"] = params["nav"][0]
@@ -308,4 +303,57 @@ elif st.session_state["nav"] == "recharge":
 elif st.session_state["nav"] == "bills":
     st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
     st.subheader("🧾 Pay Bills")
-    biller = st.selectbox("Biller",
+    billers = ["Electricity", "Water", "Mobily", "STC", "Internet"]
+    biller = st.selectbox("Biller", billers)
+    amount = st.number_input("Amount (SAR)", min_value=1, max_value=10000, step=1)
+    if st.button("Pay Bill"):
+        if amount > st.session_state["wallet_balance"]:
+            st.error("Insufficient balance!")
+        else:
+            st.session_state["wallet_balance"] -= amount
+            st.session_state["transactions"].insert(0, {
+                "name": biller,
+                "type": "Bill Payment",
+                "amount": -amount,
+                "date": "Now",
+            })
+            st.success(f"Paid {amount} SAR to {biller}")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# --- SHOPPING MINI-APP (DEMO) ---
+elif st.session_state["nav"] == "shopping":
+    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
+    st.subheader("🛍️ Shopping (Demo)")
+    st.write("Shopping integration is coming soon. You can link Noon, Amazon.sa, Jarir, and more!")
+    st.markdown('[Noon](https://www.noon.com/saudi-en/) | [Amazon.sa](https://www.amazon.sa/) | [Jarir](https://www.jarir.com/)', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# --- GOVERNMENT MINI-APP (DEMO) ---
+elif st.session_state["nav"] == "gov":
+    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
+    st.subheader("🏛️ Government Services (Demo)")
+    st.write("In the future, you’ll access Absher, Tawakkalna, and more here in one place!")
+    st.markdown('[Absher](https://www.absher.sa/) | [Tawakkalna](https://ta.sdaia.gov.sa/)', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# --- REWARDS MINI-APP ---
+elif st.session_state["nav"] == "rewards":
+    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
+    st.subheader("🎁 Rewards")
+    st.markdown(f"🏅 Your Rewards Points: <b style='color:{PRIMARY}'>{st.session_state['reward_points']}</b>", unsafe_allow_html=True)
+    st.info("Earn points by using any service! Soon you’ll redeem them for vouchers or discounts.")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# --- PROFILE PAGE ---
+elif st.session_state["nav"] == "profile":
+    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
+    st.subheader("👤 My Profile")
+    st.markdown(f"**Name:** {st.session_state['profile_name']}")
+    st.markdown(f"**Mobile:** {st.session_state['profile_mobile']}")
+    st.markdown("**Email:** user@email.com")
+    if st.button("Edit Profile"):
+        st.info("Profile editing coming soon!")
+    st.markdown(" ")
+    st.markdown("---")
+    st.write("Contact Support | Privacy Policy | Version 1.0")
+    st.markdown('</div>', unsafe_allow_html=True)
