@@ -1,12 +1,9 @@
 import streamlit as st
-import random
-import string
 from datetime import datetime
 
-# --------------- GLOBAL DESIGN AND STYLES ---------------
+# ------------------------ DESIGN CONSTANTS ------------------------
 st.set_page_config(page_title="KSA SuperApp", layout="wide", initial_sidebar_state="collapsed")
-
-PRIMARY = "#1aad19"   # WeChat green, can change to blue for Saudi
+PRIMARY = "#1aad19"
 BG = "#f7f8fa"
 CARD = "#fff"
 
@@ -16,45 +13,12 @@ st.markdown(
         body, .main, .block-container {{
             background: {BG} !important;
         }}
-        .bottom-nav {{
-            position: fixed;
-            left: 0; right: 0; bottom: 0;
-            background: #fff;
-            border-top: 1px solid #eee;
-            z-index: 9999;
-            display: flex;
-            justify-content: space-evenly;
-            padding: 8px 0 4px 0;
-        }}
-        .nav-btn {{
-            color: #999 !important;
-            font-size: 22px;
-            text-align: center;
-            padding: 0 12px;
-        }}
-        .nav-btn.active {{
-            color: {PRIMARY} !important;
-            font-weight: bold;
-        }}
         .wechat-card {{
             background: {CARD};
             border-radius: 18px;
             padding: 22px 18px 18px 18px;
             margin-bottom: 18px;
             box-shadow: 0 2px 10px #e2e5ea44;
-        }}
-        .service-btn {{
-            background: #f4f4f4;
-            border-radius: 15px;
-            padding: 15px 7px 10px 7px;
-            text-align: center;
-            margin-bottom: 16px;
-            cursor:pointer;
-            border:none;
-            font-size:15px;
-        }}
-        .service-btn:hover {{
-            background: #e9f9ee;
         }}
         .chat-bubble-user {{
             background: #d0fdd8;
@@ -84,7 +48,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --------------- APP STATE (MULTI-PAGE MINI-APP STYLE) ---------------
+# ------------------------ APP STATE ------------------------
 if "nav" not in st.session_state:
     st.session_state["nav"] = "home"
 if "wallet_balance" not in st.session_state:
@@ -110,7 +74,6 @@ if "profile_name" not in st.session_state:
 if "profile_mobile" not in st.session_state:
     st.session_state["profile_mobile"] = "+9665xxxxxxx"
 
-# --------------- MINI-APP DEFINITIONS ---------------
 services = [
     {"name": "Chat", "icon": "💬", "nav": "chat"},
     {"name": "Wallet", "icon": "💳", "nav": "wallet"},
@@ -123,31 +86,25 @@ services = [
     {"name": "Rewards", "icon": "🎁", "nav": "rewards"},
 ]
 
-nav_items = [
-    {"nav": "home", "icon": "🏠", "label": "Home"},
-    {"nav": "chat", "icon": "💬", "label": "Chat"},
-    {"nav": "discover", "icon": "🌐", "label": "Discover"},
-    {"nav": "wallet", "icon": "💳", "label": "Wallet"},
-    {"nav": "profile", "icon": "👤", "label": "Profile"},
-]
-st.markdown('<div style="height:26px;"></div>', unsafe_allow_html=True)
-bottom_nav_html = '<div class="bottom-nav">'
-for item in nav_items:
-    active = "active" if st.session_state["nav"] == item["nav"] else ""
-    bottom_nav_html += f'<a href="#" class="nav-btn {active}" onclick="window.location.search=\'?nav={item["nav"]}\'">{item["icon"]}<br><span style="font-size:13px">{item["label"]}</span></a>'
-bottom_nav_html += '</div>'
-st.markdown(bottom_nav_html, unsafe_allow_html=True)
+# ------------------------ BOTTOM NAVIGATION ------------------------
+def bottom_nav():
+    nav_labels = ["Home", "Chat", "Discover", "Wallet", "Profile"]
+    nav_icons  = ["🏠",   "💬",  "🌐",       "💳",    "👤"]
+    nav_keys   = ["home","chat","discover","wallet","profile"]
+    cols = st.columns(5)
+    for i, (lbl, icon, key) in enumerate(zip(nav_labels, nav_icons, nav_keys)):
+        active = st.session_state["nav"] == key
+        btn = cols[i].button(f"{icon}\n{lbl}", key=f"nav_{key}", use_container_width=True)
+        if btn:
+            st.session_state["nav"] = key
+        if active:
+            cols[i].markdown(f"<div style='height:3px;background:{PRIMARY};border-radius:2px;'></div>", unsafe_allow_html=True)
+        else:
+            cols[i].markdown(f"<div style='height:3px;'></div>", unsafe_allow_html=True)
 
-def goto(nav):
-    st.session_state["nav"] = nav
+# ------------------------ MAIN PAGES ------------------------
 
-params = st.experimental_get_query_params()
-if "nav" in params and params["nav"][0] in [i["nav"] for i in nav_items]:
-    st.session_state["nav"] = params["nav"][0]
-
-# --------------- PAGE LOGIC (MINI-APPS AS PAGES) ---------------
-
-# --- HOME: Mini-App Grid ---
+# --- HOME PAGE ---
 if st.session_state["nav"] == "home":
     st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
     st.markdown(f"<h2 style='color:{PRIMARY};font-weight:700;margin-bottom:12px;'>KSA SuperApp 🇸🇦</h2>", unsafe_allow_html=True)
@@ -162,10 +119,10 @@ if st.session_state["nav"] == "home":
     for i, service in enumerate(services):
         with cols[i % ncols]:
             if st.button(f"{service['icon']}<br>{service['name']}", key=f"grid_{service['nav']}", help=f"Open {service['name']}", use_container_width=True):
-                goto(service["nav"])
+                st.session_state["nav"] = service["nav"]
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- CHAT PAGE: WhatsApp-like with contacts ---
+# --- CHAT PAGE ---
 elif st.session_state["nav"] == "chat":
     st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
     st.subheader("💬 Chat")
@@ -191,16 +148,16 @@ elif st.session_state["nav"] == "chat":
                 chat_hist.append({"from": "other", "msg": "Received! (demo reply)", "time": now})
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- DISCOVER PAGE: List All Mini-Apps/Services ---
+# --- DISCOVER PAGE ---
 elif st.session_state["nav"] == "discover":
     st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
     st.subheader("🌐 Discover Services")
     for service in services:
         if st.button(f"{service['icon']}  {service['name']}", key=f"discover_{service['nav']}", use_container_width=True):
-            goto(service["nav"])
+            st.session_state["nav"] = service["nav"]
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- WALLET PAGE: Balance, Transaction Feed, Actions ---
+# --- WALLET PAGE ---
 elif st.session_state["nav"] == "wallet":
     st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
     st.subheader("💳 Wallet")
@@ -224,13 +181,13 @@ elif st.session_state["nav"] == "wallet":
     col1, col2, col3 = st.columns(3)
     with col1:
         if st.button("➕ Top Up"):
-            goto("recharge")
+            st.session_state["nav"] = "recharge"
     with col2:
         if st.button("💸 Send"):
-            goto("chat")
+            st.session_state["nav"] = "chat"
     with col3:
         if st.button("🧾 Bills"):
-            goto("bills")
+            st.session_state["nav"] = "bills"
     st.markdown('</div>', unsafe_allow_html=True)
 
 # --- FOOD MINI-APP ---
@@ -262,7 +219,7 @@ elif st.session_state["nav"] == "food":
             st.success(f"Ordered {qty} x {item} for {total} SAR!")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- TRANSPORT MINI-APP (Uber/Careem) ---
+# --- TRANSPORT MINI-APP ---
 elif st.session_state["nav"] == "rides":
     st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
     st.subheader("🚗 Ride Hailing")
@@ -357,3 +314,6 @@ elif st.session_state["nav"] == "profile":
     st.markdown("---")
     st.write("Contact Support | Privacy Policy | Version 1.0")
     st.markdown('</div>', unsafe_allow_html=True)
+
+# --------------- SHOW BOTTOM NAV AT BOTTOM OF EVERY PAGE ---------------
+bottom_nav()
