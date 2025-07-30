@@ -1,13 +1,14 @@
 import streamlit as st
 import random
 import string
+from datetime import datetime
 
 # --- UI and Styling ---
 BG = "#f6f8fa"
 CARD = "#fff"
 PRIMARY = "#1890ff"
 
-st.set_page_config(page_title="Wallet", layout="centered")
+st.set_page_config(page_title="Super Wallet", layout="centered")
 
 st.markdown(
     f"""
@@ -30,6 +31,26 @@ st.markdown(
             font-weight: bold;
             width: 100%;
             margin-bottom: 12px;
+        }}
+        .chat-bubble-user {{
+            background-color: #daf1ff;
+            border-radius: 18px 18px 4px 18px;
+            padding: 10px 16px;
+            margin-bottom: 6px;
+            align-self: flex-end;
+            max-width: 80%;
+        }}
+        .chat-bubble-other {{
+            background-color: #ededed;
+            border-radius: 18px 18px 18px 4px;
+            padding: 10px 16px;
+            margin-bottom: 6px;
+            align-self: flex-start;
+            max-width: 80%;
+        }}
+        .chat-container {{
+            display: flex;
+            flex-direction: column;
         }}
     </style>
     """,
@@ -60,6 +81,27 @@ if "reward_points" not in st.session_state:
 
 contacts = ["Ahmad", "Zaid", "Mona"]
 
+# --- Mini-Apps/Services Section ---
+mini_apps = {
+    _("Food Delivery", "توصيل طعام"): "🍔",
+    _("Shopping", "تسوق"): "🛍️",
+    _("Transport", "مواصلات"): "🚗",
+    _("Government Services", "خدمات حكومية"): "🏛️",
+    _("Mobile Recharge", "شحن الجوال"): "📱",
+    _("Chat", "محادثة"): "💬",
+}
+
+if "selected_mini_app" not in st.session_state:
+    st.session_state["selected_mini_app"] = None
+
+# --- Chat (WhatsApp-style) ---
+if "chat_history" not in st.session_state:
+    st.session_state["chat_history"] = [
+        {"from": "other", "msg": _("Hi, how can I help you? 🤖", "مرحباً، كيف أستطيع مساعدتك؟ 🤖"), "time": "09:00"},
+    ]
+if "chat_input" not in st.session_state:
+    st.session_state["chat_input"] = ""
+
 # --- Sidebar Menu ---
 menu = st.sidebar.radio(
     _("Go to", "انتقل إلى"),
@@ -75,8 +117,46 @@ menu = st.sidebar.radio(
     ]
 )
 
+# --- Mini-App Handler ---
+def show_mini_app():
+    app = st.session_state["selected_mini_app"]
+    st.markdown('<div class="wallet-card">', unsafe_allow_html=True)
+    st.header(f"{mini_apps.get(app, '🚀')} {app}")
+    if app == _("Chat", "محادثة"):
+        st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+        for chat in st.session_state["chat_history"]:
+            bubble_class = "chat-bubble-user" if chat["from"] == "user" else "chat-bubble-other"
+            st.markdown(
+                f'<div class="{bubble_class}">{chat["msg"]}<span style="float:right;color:#aaa;font-size:11px;margin-left:10px;">{chat["time"]}</span></div>',
+                unsafe_allow_html=True,
+            )
+        st.markdown('</div>', unsafe_allow_html=True)
+        col_chat, col_send = st.columns([4, 1])
+        with col_chat:
+            chat_input = st.text_input(_("Type your message", "اكتب رسالتك هنا"), key="chat_input", label_visibility="collapsed")
+        with col_send:
+            if st.button("📤"):
+                now = datetime.now().strftime("%H:%M")
+                if chat_input.strip():
+                    st.session_state["chat_history"].append({"from": "user", "msg": chat_input, "time": now})
+                    st.session_state["chat_input"] = ""
+                    # Simulate auto reply
+                    st.session_state["chat_history"].append({
+                        "from": "other",
+                        "msg": _("Received! (This is a demo chat)", "تم الاستلام! (هذه محادثة تجريبية)"),
+                        "time": now
+                    })
+        st.markdown(
+            "<div style='height:20px;'></div>", unsafe_allow_html=True
+        )
+    else:
+        st.info(_("This mini-app is coming soon!", "هذا التطبيق المصغر قادم قريباً!"))
+    if st.button(_("Back to Home", "عودة للرئيسية")):
+        st.session_state["selected_mini_app"] = None
+    st.markdown('</div>', unsafe_allow_html=True)
+
 # ---- HOME ----
-if menu == _("Home", "الرئيسية"):
+if menu == _("Home", "الرئيسية") and not st.session_state["selected_mini_app"]:
     st.markdown('<div class="wallet-card">', unsafe_allow_html=True)
     st.title(_("Welcome, Ahmed! 👋", "مرحباً، أحمد! 👋"))
     st.subheader(f"{_('Wallet Balance', 'رصيد المحفظة')}: {st.session_state['wallet_balance']:,} SAR")
@@ -103,6 +183,20 @@ if menu == _("Home", "الرئيسية"):
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.info(f"🏅 {_('Rewards Points', 'نقاط المكافآت')}: {st.session_state['reward_points']}")
+
+    # --- Mini-Apps Section ---
+    st.markdown('<div class="wallet-card">', unsafe_allow_html=True)
+    st.markdown("### 🚀 " + _("Services & Mini-Apps", "الخدمات والتطبيقات المصغرة"))
+    cols = st.columns(len(mini_apps))
+    for i, (app_name, emoji) in enumerate(mini_apps.items()):
+        with cols[i]:
+            if st.button(f"{emoji}\n{app_name}", key=f"mini_app_{i}"):
+                st.session_state["selected_mini_app"] = app_name
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ---- Show Mini-App if Selected ----
+elif st.session_state["selected_mini_app"]:
+    show_mini_app()
 
 # ---- SEND MONEY ----
 elif menu == _("Send Money", "إرسال"):
