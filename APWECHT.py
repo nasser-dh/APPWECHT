@@ -1,11 +1,11 @@
 import streamlit as st
 
-st.set_page_config(page_title="Wallet", layout="centered")
+# WeChat-style: soft almost-white background, blue accents, round cards
+BG = "#f6f8fa"         # Light, almost white (WeChat feel)
+PRIMARY = "#1890ff"    # WeChat’s accent blue (a bit lighter and fresh)
+CARD = "#fff"          # Pure white cards
 
-# Colors for WeChat/clean style
-BG = "#f6f8fa"         # almost white background
-PRIMARY = "#1d4b8f"    # main blue
-CARD = "#fff"          # card background
+st.set_page_config(page_title="Wallet", layout="centered")
 
 st.markdown(
     f"""
@@ -15,35 +15,30 @@ st.markdown(
         }}
         .wallet-card {{
             background: {CARD};
-            border-radius: 22px;
-            padding: 30px 24px 20px 24px;
-            margin-bottom: 22px;
-            box-shadow: 0 4px 16px #dde2ec38;
+            border-radius: 18px;
+            padding: 26px 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px #e7eaf3cc;
         }}
         .action-btn {{
             background: {PRIMARY};
             color: #fff !important;
             border: none;
-            border-radius: 15px;
+            border-radius: 14px;
             padding: 16px 0;
-            font-size: 17px;
-            font-weight: 600;
+            font-size: 16px;
+            font-weight: bold;
             width: 100%;
             margin-bottom: 12px;
-            transition: box-shadow .2s;
-            box-shadow: 0 2px 8px #b5c7e644;
-        }}
-        .action-btn:hover {{
-            box-shadow: 0 4px 20px #b5c7e699;
         }}
         .balance-label {{
-            color: #888;
-            font-size: 15px;
-            margin-bottom: 4px;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 3px;
         }}
         .balance-value {{
             color: {PRIMARY};
-            font-size: 33px;
+            font-size: 30px;
             font-weight: bold;
             margin-bottom: 18px;
         }}
@@ -52,11 +47,13 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# Main Card for Balance
 st.markdown('<div class="wallet-card">', unsafe_allow_html=True)
 st.markdown('<div class="balance-label">Available Balance</div>', unsafe_allow_html=True)
 st.markdown('<div class="balance-value">3,280 SAR</div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
+# Action Buttons
 col1, col2, col3 = st.columns(3)
 with col1:
     st.markdown(f'<button class="action-btn">Send</button>', unsafe_allow_html=True)
@@ -65,6 +62,7 @@ with col2:
 with col3:
     st.markdown(f'<button class="action-btn">Top Up</button>', unsafe_allow_html=True)
 
+# Recent Transactions
 st.markdown('<br>', unsafe_allow_html=True)
 st.markdown("### Recent Transactions")
 for name, typ, amt, dt in [
@@ -73,8 +71,8 @@ for name, typ, amt, dt in [
     ("Ahmad", "Received Money", "+200", "Today"),
 ]:
     st.markdown(
-        f'<div style="background:#fff;border-radius:16px;padding:11px 18px;margin-bottom:10px;box-shadow:0 1px 6px #e6e6e644;">'
+        f'<div style="background:#fff;border-radius:13px;padding:10px 18px;margin-bottom:8px;box-shadow:0 1px 3px #e6e6e633;">'
         f'<b>{name}</b> <span style="color:#888;">{typ}</span> <span style="float:right;color:{PRIMARY};">{amt} SAR</span>'
-        f'<br><span style="color:#ccc;font-size:13px;">{dt}</span></div>',
+        f'<br><span style="color:#bbb;font-size:13px;">{dt}</span></div>',
         unsafe_allow_html=True
     )
