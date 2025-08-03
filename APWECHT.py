@@ -248,4 +248,115 @@ elif st.session_state["nav"] == "gov":
     st.subheader("🏛️ Government Services in Saudi")
     gov_apps = [
         {"name": "Absher", "url": "https://www.absher.sa/", "logo": "https://www.absher.sa/images/absher_logo.png"},
-        {"name": "Tawakkalna", "url": "https://ta.s
+        {"name": "Tawakkalna", "url": "https://ta.sdaia.gov.sa/", "logo": "https://ta.sdaia.gov.sa/favicon.ico"},
+        {"name": "Najm", "url": "https://www.najm.sa/", "logo": "https://www.najm.sa/assets/images/logo.svg"},
+        {"name": "Elm", "url": "https://www.elm.sa/", "logo": "https://www.elm.sa/en/_layouts/images/logo.svg"},
+        {"name": "Etimad", "url": "https://www.etimad.sa/", "logo": "https://www.etimad.sa/favicon.ico"},
+        {"name": "Sehhaty", "url": "https://www.sehhaty.sa/", "logo": "https://www.sehhaty.sa/favicon.ico"},
+    ]
+    gov_cols = st.columns(len(gov_apps))
+    for i, app in enumerate(gov_apps):
+        with gov_cols[i]:
+            st.image(app["logo"], width=60)
+            st.markdown(f"[{app['name']}]({app['url']})", unsafe_allow_html=True)
+    st.info("Click a government app to open its official website.")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ----- RECHARGE -----
+elif st.session_state["nav"] == "recharge":
+    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
+    st.subheader("📱 Mobile Recharge")
+    telco = st.selectbox("Select Operator", ["STC", "Mobily", "Zain", "Virgin", "Lebara"])
+    amount = st.number_input("Amount (SAR)", min_value=10, max_value=500, step=10)
+    if st.button("Recharge Now"):
+        if amount > st.session_state["wallet_balance"]:
+            st.error("Insufficient balance!")
+        else:
+            st.session_state["wallet_balance"] -= amount
+            st.session_state["transactions"].insert(0, {
+                "name": telco,
+                "type": "Recharge",
+                "amount": -amount,
+                "date": "Now",
+            })
+            st.success(f"Recharged {amount} SAR for {telco}")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ----- BILLS -----
+elif st.session_state["nav"] == "bills":
+    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
+    st.subheader("🧾 Pay Bills")
+    billers = ["Electricity", "Water", "Mobily", "STC", "Internet", "Government Fees"]
+    biller = st.selectbox("Biller", billers)
+    amount = st.number_input("Amount (SAR)", min_value=1, max_value=10000, step=1)
+    if st.button("Pay Bill"):
+        if amount > st.session_state["wallet_balance"]:
+            st.error("Insufficient balance!")
+        else:
+            st.session_state["wallet_balance"] -= amount
+            st.session_state["transactions"].insert(0, {
+                "name": biller,
+                "type": "Bill Payment",
+                "amount": -amount,
+                "date": "Now",
+            })
+            st.success(f"Paid {amount} SAR to {biller}")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ----- WALLET -----
+elif st.session_state["nav"] == "wallet":
+    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
+    st.subheader("💳 Wallet")
+    st.markdown(f"<b>Available:</b> <span style='color:{PRIMARY};font-size:24px'>{st.session_state['wallet_balance']:,} SAR</span>", unsafe_allow_html=True)
+    st.info("Use 'Top Up', 'Send', 'Bill', or pay in services. All updates instantly!")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
+    st.markdown("#### Transactions")
+    for t in st.session_state["transactions"][:8]:
+        color = "green" if t['amount'] > 0 else "red"
+        st.markdown(
+            f"**{t['name']}** — {t['type']} : "
+            f"<span style='color:{color}'>{t['amount']} SAR</span> ({t['date']})",
+            unsafe_allow_html=True
+        )
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # Wallet actions (mini)
+    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        if st.button("➕ Top Up"):
+            st.session_state["nav"] = "recharge"
+    with col2:
+        if st.button("💸 Send"):
+            st.session_state["nav"] = "chat"
+    with col3:
+        if st.button("🧾 Bills"):
+            st.session_state["nav"] = "bills"
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ----- REWARDS -----
+elif st.session_state["nav"] == "rewards":
+    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
+    st.subheader("🎁 Rewards")
+    st.markdown(f"🏅 Your Rewards Points: <b style='color:{PRIMARY}'>{st.session_state['reward_points']}</b>", unsafe_allow_html=True)
+    st.info("Earn points by using any service! Soon you’ll redeem them for vouchers or discounts.")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ----- PROFILE -----
+elif st.session_state["nav"] == "profile":
+    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
+    st.subheader("👤 My Profile")
+    st.markdown(f"**Name:** {st.session_state['profile_name']}")
+    st.markdown(f"**Mobile:** {st.session_state['profile_mobile']}")
+    st.markdown("**Email:** user@email.com")
+    if st.button("Edit Profile"):
+        st.info("Profile editing coming soon!")
+    st.markdown(" ")
+    st.markdown("---")
+    st.write("Contact Support | Privacy Policy | Version 1.0")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ----- BOTTOM NAV AT END -----
+bottom_nav()
