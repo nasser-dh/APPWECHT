@@ -1,9 +1,9 @@
 import streamlit as st
 from datetime import datetime
 
-# ------------------------ DESIGN CONSTANTS ------------------------
-st.set_page_config(page_title="KSA SuperApp", layout="wide", initial_sidebar_state="collapsed")
-PRIMARY = "#1aad19"
+# ----- DESIGN -----
+st.set_page_config(page_title="Saudi SuperApp", layout="wide", initial_sidebar_state="collapsed")
+PRIMARY = "#009966"
 BG = "#f7f8fa"
 CARD = "#fff"
 
@@ -43,12 +43,15 @@ st.markdown(
             flex-direction: column;
             min-height: 420px;
         }}
+        .app-link {{
+            text-decoration:none !important;
+        }}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# ------------------------ APP STATE ------------------------
+# ----- APP STATE -----
 if "nav" not in st.session_state:
     st.session_state["nav"] = "home"
 if "wallet_balance" not in st.session_state:
@@ -61,32 +64,26 @@ if "transactions" not in st.session_state:
     ]
 if "reward_points" not in st.session_state:
     st.session_state["reward_points"] = 480
-if "chat_list" not in st.session_state:
-    st.session_state["chat_list"] = [
-        {"contact": "Support Bot 🤖", "history": [
-            {"from": "other", "msg": "Welcome to SuperApp KSA! How can we help you today?", "time": "09:10"},
-        ]}
-    ]
-if "active_chat" not in st.session_state:
-    st.session_state["active_chat"] = 0
 if "profile_name" not in st.session_state:
     st.session_state["profile_name"] = "Ahmed"
 if "profile_mobile" not in st.session_state:
     st.session_state["profile_mobile"] = "+9665xxxxxxx"
 
+# ----- SERVICES -----
 services = [
-    {"name": "Chat", "icon": "💬", "nav": "chat"},
-    {"name": "Wallet", "icon": "💳", "nav": "wallet"},
-    {"name": "Food", "icon": "🍔", "nav": "food"},
+    {"name": "Chat & Social", "icon": "💬", "nav": "chat"},
+    {"name": "Food & Delivery", "icon": "🍔", "nav": "food"},
     {"name": "Transport", "icon": "🚗", "nav": "rides"},
-    {"name": "Recharge", "icon": "📱", "nav": "recharge"},
-    {"name": "Bills", "icon": "🧾", "nav": "bills"},
+    {"name": "Banks", "icon": "🏦", "nav": "banks"},
     {"name": "Shopping", "icon": "🛍️", "nav": "shopping"},
     {"name": "Government", "icon": "🏛️", "nav": "gov"},
+    {"name": "Recharge", "icon": "📱", "nav": "recharge"},
+    {"name": "Bills", "icon": "🧾", "nav": "bills"},
+    {"name": "Wallet", "icon": "💳", "nav": "wallet"},
     {"name": "Rewards", "icon": "🎁", "nav": "rewards"},
 ]
 
-# ------------------------ BOTTOM NAVIGATION ------------------------
+# ----- BOTTOM NAV -----
 def bottom_nav():
     nav_labels = ["Home", "Chat", "Discover", "Wallet", "Profile"]
     nav_icons  = ["🏠",   "💬",  "🌐",       "💳",    "👤"]
@@ -102,18 +99,16 @@ def bottom_nav():
         else:
             cols[i].markdown(f"<div style='height:3px;'></div>", unsafe_allow_html=True)
 
-# ------------------------ MAIN PAGES ------------------------
-
-# --- HOME PAGE ---
+# ----- HOME -----
 if st.session_state["nav"] == "home":
     st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
-    st.markdown(f"<h2 style='color:{PRIMARY};font-weight:700;margin-bottom:12px;'>KSA SuperApp 🇸🇦</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='color:{PRIMARY};font-weight:700;margin-bottom:12px;'>🇸🇦 Saudi SuperApp</h2>", unsafe_allow_html=True)
     st.markdown(f"<b>Welcome, {st.session_state['profile_name']}!</b>")
     st.markdown(f"<span style='color:#444;font-size:18px;'>Balance:</span> <b style='color:{PRIMARY};font-size:22px'>{st.session_state['wallet_balance']:,} SAR</b>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
-    st.markdown("<b style='font-size:17px;'>Services & Mini-Apps</b><br>", unsafe_allow_html=True)
+    st.markdown("<b style='font-size:17px;'>Saudi Services & Apps</b><br>", unsafe_allow_html=True)
     ncols = 4
     cols = st.columns(ncols)
     for i, service in enumerate(services):
@@ -122,198 +117,135 @@ if st.session_state["nav"] == "home":
                 st.session_state["nav"] = service["nav"]
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- CHAT PAGE ---
+# ----- CHAT & SOCIAL -----
 elif st.session_state["nav"] == "chat":
     st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
-    st.subheader("💬 Chat")
-    contacts = [chat["contact"] for chat in st.session_state["chat_list"]]
-    contact = st.selectbox("Select Contact", contacts, index=st.session_state["active_chat"])
-    idx = contacts.index(contact)
-    st.session_state["active_chat"] = idx
-    chat_hist = st.session_state["chat_list"][idx]["history"]
-    st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-    for chat in chat_hist:
-        bubble_class = "chat-bubble-user" if chat["from"] == "user" else "chat-bubble-other"
-        st.markdown(f'<div class="{bubble_class}">{chat["msg"]}<span style="float:right;color:#aaa;font-size:11px;margin-left:10px;">{chat["time"]}</span></div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-    col_chat, col_send = st.columns([5, 1])
-    with col_chat:
-        chat_input = st.text_input("Type your message", key="chat_input", label_visibility="collapsed", placeholder="Write a message...")
-    with col_send:
-        if st.button("📤"):
-            now = datetime.now().strftime("%H:%M")
-            if chat_input.strip():
-                chat_hist.append({"from": "user", "msg": chat_input, "time": now})
-                st.session_state["chat_input"] = ""
-                chat_hist.append({"from": "other", "msg": "Received! (demo reply)", "time": now})
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# --- DISCOVER PAGE ---
-elif st.session_state["nav"] == "discover":
-    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
-    st.subheader("🌐 Discover Services")
-    for service in services:
-        if st.button(f"{service['icon']}  {service['name']}", key=f"discover_{service['nav']}", use_container_width=True):
-            st.session_state["nav"] = service["nav"]
+    st.subheader("💬 Chat & Social Apps")
+    st.markdown("**Type a username or phone:**")
+    username = st.text_input("Snap/Insta/X Username or Phone", key="user_social", placeholder="@username or +966...")
+    st.markdown("**Quick links to social apps:**")
+    social_apps = [
+        {"name": "WhatsApp", "url": "https://wa.me/", "logo": "https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"},
+        {"name": "Snapchat", "url": "https://www.snapchat.com/add/", "logo": "https://upload.wikimedia.org/wikipedia/en/a/ad/Snapchat_logo.svg"},
+        {"name": "X (Twitter)", "url": "https://x.com/", "logo": "https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_of_Twitter.svg"},
+        {"name": "Instagram", "url": "https://instagram.com/", "logo": "https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png"},
+        {"name": "Facebook", "url": "https://facebook.com/", "logo": "https://upload.wikimedia.org/wikipedia/commons/1/1b/Facebook_icon.svg"},
+        {"name": "TikTok", "url": "https://www.tiktok.com/", "logo": "https://upload.wikimedia.org/wikipedia/commons/0/09/TikTok_logo.svg"},
+        {"name": "Telegram", "url": "https://t.me/", "logo": "https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg"},
+    ]
+    s_cols = st.columns(len(social_apps))
+    for i, app in enumerate(social_apps):
+        with s_cols[i]:
+            st.image(app["logo"], width=40)
+            st.markdown(f"[{app['name']}]({app['url']})", unsafe_allow_html=True)
+    if username.strip():
+        st.success(f"You searched for: {username} (simulate profile lookup or open the social app)")
+    st.info("You can enter a username/phone or tap a social app to open it.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- WALLET PAGE ---
-elif st.session_state["nav"] == "wallet":
-    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
-    st.subheader("💳 Wallet")
-    st.markdown(f"<b>Available:</b> <span style='color:{PRIMARY};font-size:24px'>{st.session_state['wallet_balance']:,} SAR</span>", unsafe_allow_html=True)
-    st.info("Use 'Top Up', 'Send', 'Bill', or pay in services. All updates instantly!")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
-    st.markdown("#### Transactions")
-    for t in st.session_state["transactions"][:8]:
-        color = "green" if t['amount'] > 0 else "red"
-        st.markdown(
-            f"**{t['name']}** — {t['type']} : "
-            f"<span style='color:{color}'>{t['amount']} SAR</span> ({t['date']})",
-            unsafe_allow_html=True
-        )
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # Wallet actions (mini)
-    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        if st.button("➕ Top Up"):
-            st.session_state["nav"] = "recharge"
-    with col2:
-        if st.button("💸 Send"):
-            st.session_state["nav"] = "chat"
-    with col3:
-        if st.button("🧾 Bills"):
-            st.session_state["nav"] = "bills"
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# --- FOOD MINI-APP ---
+# ----- FOOD & DELIVERY -----
 elif st.session_state["nav"] == "food":
     st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
-    st.subheader("🍔 Food Delivery")
-    food_menu = [
-        {"name": "Burger", "price": 22, "img": "🍔"},
-        {"name": "Pizza", "price": 32, "img": "🍕"},
-        {"name": "Shawarma", "price": 18, "img": "🌯"},
-        {"name": "Salad", "price": 12, "img": "🥗"},
+    st.subheader("🍔 Order Food / Saudi Delivery Apps")
+    rest = st.text_input("Restaurant or Cuisine", key="food_rest", placeholder="e.g. AlBaik, Shawarma, Pizza")
+    st.markdown("**Or open a delivery app:**")
+    food_apps = [
+        {"name": "HungerStation", "url": "https://hungerstation.com/", "logo": "https://seeklogo.com/images/H/hungerstation-logo-ACEE84CA6E-seeklogo.com.png"},
+        {"name": "Jahez", "url": "https://www.jahez.net/", "logo": "https://seeklogo.com/images/J/jahez-logo-7A9CBE733C-seeklogo.com.png"},
+        {"name": "Mrsool", "url": "https://www.mrsool.co/", "logo": "https://www.mrsool.co/images/mrsool_logo.svg"},
+        {"name": "Talabat", "url": "https://www.talabat.com/saudi", "logo": "https://cdn.talabat.com/images/talabat-logo.png"},
+        {"name": "ToYou", "url": "https://www.toyou.io/", "logo": "https://www.toyou.io/images/logo.svg"},
+        {"name": "Shgardi", "url": "https://www.shgardi.app/", "logo": "https://www.shgardi.app/assets/images/logo/logo.svg"},
+        {"name": "Nana", "url": "https://nana.sa/", "logo": "https://nana.sa/favicon.ico"},
     ]
-    food = st.selectbox("Choose food", [f"{f['img']} {f['name']} - {f['price']} SAR" for f in food_menu])
-    qty = st.number_input("Quantity", min_value=1, max_value=10, value=1)
-    if st.button("Order Now"):
-        item = food.split(" - ")[0].strip()
-        price = int(food.split(" - ")[1].split()[0])
-        total = price * qty
-        if total > st.session_state["wallet_balance"]:
-            st.error("Insufficient balance!")
-        else:
-            st.session_state["wallet_balance"] -= total
-            st.session_state["transactions"].insert(0, {
-                "name": item,
-                "type": "Food Order",
-                "amount": -total,
-                "date": "Now",
-            })
-            st.success(f"Ordered {qty} x {item} for {total} SAR!")
+    appcols = st.columns(len(food_apps))
+    for i, app in enumerate(food_apps):
+        with appcols[i]:
+            st.image(app["logo"], width=60)
+            st.markdown(f"[{app['name']}]({app['url']})", unsafe_allow_html=True)
+    st.info("Type a restaurant/cuisine or click a delivery app to order.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- TRANSPORT MINI-APP ---
+# ----- TRANSPORT -----
 elif st.session_state["nav"] == "rides":
     st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
-    st.subheader("🚗 Ride Hailing")
-    st.write("Choose a service to book your ride:")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("[![Uber](https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png)](https://www.uber.com/sa/ar/)", unsafe_allow_html=True)
-        if st.button("Open Uber"):
-            st.markdown('<meta http-equiv="refresh" content="0; url=https://www.uber.com/sa/ar/">', unsafe_allow_html=True)
-    with col2:
-        st.markdown("[![Careem](https://logos-world.net/wp-content/uploads/2022/03/Careem-Logo.png)](https://www.careem.com/)", unsafe_allow_html=True)
-        if st.button("Open Careem"):
-            st.markdown('<meta http-equiv="refresh" content="0; url=https://www.careem.com/">', unsafe_allow_html=True)
-    st.info("Tap a logo above to open the app in your browser.")
+    st.subheader("🚗 Ride Hailing / Transport")
+    st.markdown("**Top transport and mobility apps in Saudi:**")
+    ride_apps = [
+        {"name": "Uber", "url": "https://www.uber.com/sa/ar/", "logo": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png"},
+        {"name": "Careem", "url": "https://www.careem.com/", "logo": "https://logos-world.net/wp-content/uploads/2022/03/Careem-Logo.png"},
+        {"name": "Kaiian", "url": "https://www.kaiian.com/", "logo": "https://www.kaiian.com/img/logo.png"},
+        {"name": "Saptco", "url": "https://www.saptco.com.sa/", "logo": "https://www.saptco.com.sa/images/logo.png"},
+    ]
+    ridecols = st.columns(len(ride_apps))
+    for i, app in enumerate(ride_apps):
+        with ridecols[i]:
+            st.image(app["logo"], width=60)
+            st.markdown(f"[{app['name']}]({app['url']})", unsafe_allow_html=True)
+    st.info("Tap a transport app to book or order a ride.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- MOBILE RECHARGE MINI-APP ---
-elif st.session_state["nav"] == "recharge":
+# ----- BANKS & WALLETS -----
+elif st.session_state["nav"] == "banks":
     st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
-    st.subheader("📱 Mobile Recharge")
-    telco = st.selectbox("Select Operator", ["STC", "Mobily", "Zain"])
-    amount = st.number_input("Amount (SAR)", min_value=10, max_value=500, step=10)
-    if st.button("Recharge Now"):
-        if amount > st.session_state["wallet_balance"]:
-            st.error("Insufficient balance!")
-        else:
-            st.session_state["wallet_balance"] -= amount
-            st.session_state["transactions"].insert(0, {
-                "name": telco,
-                "type": "Recharge",
-                "amount": -amount,
-                "date": "Now",
-            })
-            st.success(f"Recharged {amount} SAR for {telco}")
+    st.subheader("🏦 Saudi Banks & Digital Wallets")
+    st.markdown("**Major Banks in Saudi Arabia:**")
+    banks = [
+        {"name": "Al Rajhi", "url": "https://www.alrajhibank.com.sa/", "logo": "https://www.alrajhibank.com.sa/content/dam/arbah/brand-assets/logo-en.svg"},
+        {"name": "SNB", "url": "https://www.alahli.com/", "logo": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Saudi_National_Bank_Logo.svg"},
+        {"name": "Riyad Bank", "url": "https://www.riyadbank.com/", "logo": "https://www.riyadbank.com/en/personal-banking/pages/images/riyad-bank-logo.svg"},
+        {"name": "SABB", "url": "https://www.sabb.com/", "logo": "https://www.sabb.com/sites/sabb/icons/favicon.svg"},
+        {"name": "Alinma", "url": "https://www.alinma.com/", "logo": "https://www.alinma.com/wps/wcm/connect/alinma/AlinmaBank/en/images/logo.png"},
+        {"name": "Bank AlJazira", "url": "https://www.baj.com.sa/", "logo": "https://www.baj.com.sa/images/baj-logo.png"},
+        {"name": "ANB", "url": "https://www.anb.com.sa/", "logo": "https://www.anb.com.sa/SiteCollectionImages/logo.png"},
+    ]
+    bank_cols = st.columns(len(banks))
+    for i, bank in enumerate(banks):
+        with bank_cols[i]:
+            st.image(bank["logo"], width=60)
+            st.markdown(f"[{bank['name']}]({bank['url']})", unsafe_allow_html=True)
+    st.markdown("**Digital Wallets:**")
+    wallets = [
+        {"name": "STC Pay", "url": "https://www.stcpay.com.sa/", "logo": "https://www.stcpay.com.sa/themes/custom/stcpay/favicon.ico"},
+        {"name": "Apple Pay", "url": "https://www.apple.com/apple-pay/", "logo": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg"},
+        {"name": "mada Pay", "url": "https://www.madapay.sa/", "logo": "https://www.madapay.sa/content/dam/madapay/logo.png"},
+        {"name": "UrPay", "url": "https://www.urpay.com.sa/", "logo": "https://www.urpay.com.sa/assets/images/logo.svg"},
+        {"name": "Tabby", "url": "https://tabby.ai/", "logo": "https://tabby.ai/favicon.ico"},
+    ]
+    wallet_cols = st.columns(len(wallets))
+    for i, w in enumerate(wallets):
+        with wallet_cols[i]:
+            st.image(w["logo"], width=36)
+            st.markdown(f"[{w['name']}]({w['url']})", unsafe_allow_html=True)
+    st.info("Tap a bank or wallet to open their site/app.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- BILLS MINI-APP ---
-elif st.session_state["nav"] == "bills":
-    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
-    st.subheader("🧾 Pay Bills")
-    billers = ["Electricity", "Water", "Mobily", "STC", "Internet"]
-    biller = st.selectbox("Biller", billers)
-    amount = st.number_input("Amount (SAR)", min_value=1, max_value=10000, step=1)
-    if st.button("Pay Bill"):
-        if amount > st.session_state["wallet_balance"]:
-            st.error("Insufficient balance!")
-        else:
-            st.session_state["wallet_balance"] -= amount
-            st.session_state["transactions"].insert(0, {
-                "name": biller,
-                "type": "Bill Payment",
-                "amount": -amount,
-                "date": "Now",
-            })
-            st.success(f"Paid {amount} SAR to {biller}")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# --- SHOPPING MINI-APP (DEMO) ---
+# ----- SHOPPING -----
 elif st.session_state["nav"] == "shopping":
     st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
-    st.subheader("🛍️ Shopping (Demo)")
-    st.write("Shopping integration is coming soon. You can link Noon, Amazon.sa, Jarir, and more!")
-    st.markdown('[Noon](https://www.noon.com/saudi-en/) | [Amazon.sa](https://www.amazon.sa/) | [Jarir](https://www.jarir.com/)', unsafe_allow_html=True)
+    st.subheader("🛍️ Shopping in Saudi")
+    st.markdown("**Top Saudi Shopping Apps & Stores:**")
+    shops = [
+        {"name": "Noon", "url": "https://www.noon.com/saudi-en/", "logo": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Noon.com_Logo.png"},
+        {"name": "Amazon.sa", "url": "https://www.amazon.sa/", "logo": "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg"},
+        {"name": "Jarir", "url": "https://www.jarir.com/", "logo": "https://www.jarir.com/images/jarir-logo-en.svg"},
+        {"name": "SOUQ", "url": "https://saudi.souq.com/", "logo": "https://upload.wikimedia.org/wikipedia/commons/6/6d/Souq.com_logo.svg"},
+        {"name": "Namshi", "url": "https://en-sa.namshi.com/", "logo": "https://cdn.namshi.com/assets/namshi_logo.svg"},
+        {"name": "Extra", "url": "https://www.extra.com/", "logo": "https://www.extra.com/on/demandware.static/Sites-extra-SA-Site/-/default/dw9cf3e236/images/extra-logo.svg"},
+        {"name": "Ounass", "url": "https://www.ounass.sa/", "logo": "https://www.ounass.sa/on/demandware.static/Sites-Ounass-Site/-/default/dw6e9dcd81/images/logo.svg"},
+    ]
+    shop_cols = st.columns(len(shops))
+    for i, shop in enumerate(shops):
+        with shop_cols[i]:
+            st.image(shop["logo"], width=60)
+            st.markdown(f"[{shop['name']}]({shop['url']})", unsafe_allow_html=True)
+    st.info("Tap a store to open their website or app.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- GOVERNMENT MINI-APP (DEMO) ---
+# ----- GOVERNMENT -----
 elif st.session_state["nav"] == "gov":
     st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
-    st.subheader("🏛️ Government Services (Demo)")
-    st.write("In the future, you’ll access Absher, Tawakkalna, and more here in one place!")
-    st.markdown('[Absher](https://www.absher.sa/) | [Tawakkalna](https://ta.sdaia.gov.sa/)', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# --- REWARDS MINI-APP ---
-elif st.session_state["nav"] == "rewards":
-    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
-    st.subheader("🎁 Rewards")
-    st.markdown(f"🏅 Your Rewards Points: <b style='color:{PRIMARY}'>{st.session_state['reward_points']}</b>", unsafe_allow_html=True)
-    st.info("Earn points by using any service! Soon you’ll redeem them for vouchers or discounts.")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# --- PROFILE PAGE ---
-elif st.session_state["nav"] == "profile":
-    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
-    st.subheader("👤 My Profile")
-    st.markdown(f"**Name:** {st.session_state['profile_name']}")
-    st.markdown(f"**Mobile:** {st.session_state['profile_mobile']}")
-    st.markdown("**Email:** user@email.com")
-    if st.button("Edit Profile"):
-        st.info("Profile editing coming soon!")
-    st.markdown(" ")
-    st.markdown("---")
-    st.write("Contact Support | Privacy Policy | Version 1.0")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# --------------- SHOW BOTTOM NAV AT BOTTOM OF EVERY PAGE ---------------
-bottom_nav()
+    st.subheader("🏛️ Government Services in Saudi")
+    gov_apps = [
+        {"name": "Absher", "url": "https://www.absher.sa/", "logo": "https://www.absher.sa/images/absher_logo.png"},
+        {"name": "Tawakkalna", "url": "https://ta.s
