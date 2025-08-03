@@ -1,195 +1,207 @@
 import streamlit as st
 
-st.set_page_config(page_title="Saudi SuperApp (Secure MVP)", layout="wide")
+st.set_page_config(page_title="Saudi SuperApp", layout="wide")
+PRIMARY = "#009966"
+BG = "#f7f8fa"
+CARD = "#fff"
 
-# -------- STATE --------
-if "connected" not in st.session_state:
-    st.session_state["connected"] = {
+st.markdown(
+    f"""
+    <style>
+        body, .main, .block-container {{
+            background: {BG} !important;
+        }}
+        .wechat-card {{
+            background: {CARD};
+            border-radius: 18px;
+            padding: 22px 18px 18px 18px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 10px #e2e5ea44;
+        }}
+        .locked-btn {{
+            opacity: 0.4 !important;
+            pointer-events: none;
+        }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# ---- App State ----
+if "connections" not in st.session_state:
+    st.session_state["connections"] = {
         "bank": False,
         "food": False,
         "social": False,
-        "delivery": False,
-        "privacy": True, # True = hide details from others
-        "requests": [],
-        "approved": [],
+        "delivery": False
     }
-if "user_bank" not in st.session_state:
-    st.session_state["user_bank"] = None
-if "user_social" not in st.session_state:
-    st.session_state["user_social"] = None
-if "user_food" not in st.session_state:
-    st.session_state["user_food"] = None
-if "user_delivery" not in st.session_state:
-    st.session_state["user_delivery"] = None
-if "pending_request" not in st.session_state:
-    st.session_state["pending_request"] = None
+if "privacy" not in st.session_state:
+    st.session_state["privacy"] = True
 
-# ---------- HEADER ----------
-st.markdown("""
-    <h2 style='color:#009966;font-weight:800'>🇸🇦 Saudi SuperApp — Secure Prototype</h2>
-    <span style='color:gray;font-size:16px'>All your accounts, all your apps — one private, secure dashboard.<br>Nothing is shared with contacts unless you approve!</span>
-    <hr>
-""", unsafe_allow_html=True)
+def connection_modal(service):
+    st.session_state["show_modal"] = service
 
-# ---------- PRIVACY -----------
-col_priv, col_stat = st.columns([2,1])
-with col_priv:
-    st.write("🔒 **Privacy Settings**")
-    privacy = st.toggle("Hide my account details from others (default: ON)", value=st.session_state["connected"]["privacy"])
-    st.session_state["connected"]["privacy"] = privacy
+if "show_modal" not in st.session_state:
+    st.session_state["show_modal"] = None
 
-with col_stat:
-    st.markdown("**Status:**")
-    for service in ["bank", "food", "social", "delivery"]:
-        connected = st.session_state["connected"][service]
-        emoji = "✅" if connected else "❌"
-        st.write(f"{emoji} {service.capitalize()}")
+# ---- HEADER ----
+st.markdown(f"<h2 style='color:{PRIMARY};font-weight:800'>🇸🇦 Saudi SuperApp</h2>", unsafe_allow_html=True)
+st.write("All your Saudi accounts, food, banks, delivery, social — in one beautiful, private dashboard.")
 
-# ---------- ACCOUNT CONNECTION ----------
-st.markdown("### 👤 Connect Your Accounts")
-c1, c2, c3, c4 = st.columns(4)
-
-with c1:
-    st.subheader("🏦 Bank")
-    if not st.session_state["connected"]["bank"]:
-        bank = st.selectbox("Choose your Bank", ["--Select--","Al Rajhi","SNB","Riyad","SABB","Alinma"])
-        user_id = st.text_input("Bank Username", key="bank_id")
-        if st.button("Connect Bank"):
-            if bank != "--Select--" and user_id:
-                st.session_state["connected"]["bank"] = True
-                st.session_state["user_bank"] = {"bank":bank,"id":user_id}
-                st.success("Bank account connected!")
-            else:
-                st.error("Please select a bank and enter username")
-    else:
-        st.success(f"Connected: {st.session_state['user_bank']['bank']} (ID: {st.session_state['user_bank']['id']})")
-
-with c2:
-    st.subheader("🍔 Food & Delivery")
-    if not st.session_state["connected"]["food"]:
-        fav = st.text_input("Fav Restaurant (for demo)", key="food_id")
-        if st.button("Connect Food", key="foodbtn"):
-            if fav:
-                st.session_state["connected"]["food"] = True
-                st.session_state["user_food"] = fav
-                st.success("Food account connected!")
-            else:
-                st.error("Please enter your favorite")
-    else:
-        st.success(f"Connected: {st.session_state['user_food']}")
-
-with c3:
-    st.subheader("💬 Social Media")
-    if not st.session_state["connected"]["social"]:
-        handle = st.text_input("Social Username (Snap/Insta)", key="soc_id")
-        if st.button("Connect Social", key="socbtn"):
-            if handle:
-                st.session_state["connected"]["social"] = True
-                st.session_state["user_social"] = handle
-                st.success("Social account connected!")
-            else:
-                st.error("Please enter a username")
-    else:
-        st.success(f"Connected: {st.session_state['user_social']}")
-
-with c4:
-    st.subheader("🚗 Delivery App")
-    if not st.session_state["connected"]["delivery"]:
-        app = st.selectbox("Select Delivery", ["--Select--","HungerStation","Jahez","Mrsool"])
-        if st.button("Connect Delivery", key="delbtn"):
-            if app != "--Select--":
-                st.session_state["connected"]["delivery"] = True
-                st.session_state["user_delivery"] = app
-                st.success("Delivery app connected!")
-            else:
-                st.error("Please choose a delivery app")
-    else:
-        st.success(f"Connected: {st.session_state['user_delivery']}")
+# ---- Privacy ----
+st.markdown("**🔒 Privacy**")
+st.session_state["privacy"] = st.toggle(
+    "Hide my account details from contacts (default: ON)",
+    value=st.session_state["privacy"]
+)
 
 st.divider()
 
-# -------------- SIMULATED CONTACT REQUESTS (privacy system) --------------
-st.markdown("### 🤝 Contact Requests")
-st.write("If a contact wants to see your accounts, their request appears here. You must approve to share!")
+# ---- Home Card ----
+st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
+st.markdown(f"<b style='font-size:18px;'>Saudi Services & Apps</b><br>", unsafe_allow_html=True)
 
-if st.session_state["pending_request"] is None:
-    name = st.text_input("Contact Name (simulate request)", key="cname")
-    if st.button("Simulate Contact Request"):
-        if name:
-            st.session_state["pending_request"] = name
-            st.session_state["connected"]["requests"].append(name)
-            st.info(f"{name} wants access to your accounts!")
-else:
-    name = st.session_state["pending_request"]
-    st.warning(f"{name} requests access to your connected accounts!")
-    colA, colB = st.columns(2)
-    with colA:
-        if st.button("Approve"):
-            st.session_state["connected"]["approved"].append(name)
-            st.success(f"Approved {name}!")
-            st.session_state["pending_request"] = None
-    with colB:
-        if st.button("Reject"):
-            st.info("Request rejected.")
-            st.session_state["pending_request"] = None
-
-if st.session_state["connected"]["approved"]:
-    st.success("Approved contacts: " + ", ".join(st.session_state["connected"]["approved"]))
-
-# ------------- DASHBOARD: SEE YOUR LINKED SERVICES -------------
-st.markdown("### 📱 My Apps & Accounts Dashboard")
-for service, label, icon in [
-    ("bank","Bank","🏦"),
-    ("food","Food","🍔"),
-    ("delivery","Delivery","🚗"),
-    ("social","Social","💬"),
-]:
-    connected = st.session_state["connected"][service]
-    info = None
-    if connected:
-        if service=="bank":
-            info = f"**{st.session_state['user_bank']['bank']}** (ID: {st.session_state['user_bank']['id']})"
-        elif service=="food":
-            info = f"Fav: {st.session_state['user_food']}"
-        elif service=="delivery":
-            info = f"{st.session_state['user_delivery']}"
-        elif service=="social":
-            info = f"@{st.session_state['user_social']}"
-    else:
-        info = "*Not Connected*"
-
-    # PRIVACY CHECK: hide info if privacy is ON and not you
-    show = not st.session_state["connected"]["privacy"]
-    if show or service=="social":  # Always show your own socials
-        st.markdown(f"{icon} **{label}**: {info}")
-    else:
-        st.markdown(f"{icon} **{label}**: <span style='color:gray'>Hidden (private)</span>", unsafe_allow_html=True)
-
-st.info("When privacy is ON, contacts cannot see your accounts unless you approve their request.")
-
-# ----------------- SIMULATED INTEGRATION LINKS -----------------
-st.markdown("### 🌟 Integrated Apps Quick Access")
+services = [
+    {"name": "Bank", "icon": "🏦", "nav": "bank"},
+    {"name": "Food", "icon": "🍔", "nav": "food"},
+    {"name": "Social", "icon": "💬", "nav": "social"},
+    {"name": "Delivery", "icon": "🚗", "nav": "delivery"},
+    {"name": "Shopping", "icon": "🛍️", "nav": "shop"},
+    {"name": "Government", "icon": "🏛️", "nav": "gov"},
+    {"name": "Recharge", "icon": "📱", "nav": "recharge"},
+    {"name": "Bills", "icon": "🧾", "nav": "bills"},
+    {"name": "Wallet", "icon": "💳", "nav": "wallet"},
+]
 cols = st.columns(4)
-with cols[0]:
-    if st.session_state["connected"]["bank"]:
-        st.link_button("Go to Bank", "https://www.alrajhibank.com.sa/")
+for i, service in enumerate(services):
+    nav = service["nav"]
+    icon = service["icon"]
+    label = service["name"]
+    # Connection required for key services
+    locked = nav in ["bank", "food", "social", "delivery"] and not st.session_state["connections"][nav]
+    btn_style = "locked-btn" if locked else ""
+    if locked:
+        if cols[i % 4].button(f"{icon} {label}\n🔒 Connect", key=f"btn_{nav}"):
+            st.session_state["show_modal"] = nav
     else:
-        st.button("Go to Bank", disabled=True)
-with cols[1]:
-    if st.session_state["connected"]["food"]:
-        st.link_button("Order Food", "https://hungerstation.com/")
-    else:
-        st.button("Order Food", disabled=True)
-with cols[2]:
-    if st.session_state["connected"]["delivery"]:
-        st.link_button("Book Delivery", "https://www.mrsool.co/")
-    else:
-        st.button("Book Delivery", disabled=True)
-with cols[3]:
-    if st.session_state["connected"]["social"]:
-        st.link_button("Open Social", "https://www.snapchat.com/add/")
-    else:
-        st.button("Open Social", disabled=True)
+        if cols[i % 4].button(f"{icon} {label}", key=f"btn_{nav}"):
+            st.session_state["show_modal"] = nav
+st.markdown('</div>', unsafe_allow_html=True)
 
-st.caption("Links work only after you connect and approve. In production, you would authenticate and open your real account/app.")
+# ---- Connection Modals ----
+if st.session_state["show_modal"]:
+    nav = st.session_state["show_modal"]
+    with st.popover(f"Connect your {nav.capitalize()} Account", use_container_width=True):
+        st.markdown(f"### {services[[s['nav'] for s in services].index(nav)]['icon']} Connect {nav.capitalize()}")
+        if not st.session_state["connections"][nav]:
+            if nav == "bank":
+                bank = st.selectbox("Choose Bank", ["--Select--", "Al Rajhi", "SNB", "Riyad", "SABB", "Alinma"])
+                user = st.text_input("Bank User Name")
+                if st.button("Connect Bank"):
+                    if bank != "--Select--" and user:
+                        st.session_state["connections"]["bank"] = True
+                        st.success("Connected!")
+                        st.session_state["show_modal"] = None
+                    else:
+                        st.error("Select your bank and enter username.")
+            elif nav == "food":
+                fav = st.text_input("Favorite Restaurant or App")
+                if st.button("Connect Food"):
+                    if fav:
+                        st.session_state["connections"]["food"] = True
+                        st.success("Connected!")
+                        st.session_state["show_modal"] = None
+                    else:
+                        st.error("Enter your favorite!")
+            elif nav == "social":
+                handle = st.text_input("Snap/Insta/X Username")
+                if st.button("Connect Social"):
+                    if handle:
+                        st.session_state["connections"]["social"] = True
+                        st.success("Connected!")
+                        st.session_state["show_modal"] = None
+                    else:
+                        st.error("Enter username!")
+            elif nav == "delivery":
+                app = st.selectbox("Delivery App", ["--Select--", "HungerStation", "Jahez", "Mrsool"])
+                if st.button("Connect Delivery"):
+                    if app != "--Select--":
+                        st.session_state["connections"]["delivery"] = True
+                        st.success("Connected!")
+                        st.session_state["show_modal"] = None
+                    else:
+                        st.error("Select delivery app!")
+        else:
+            st.success("Already connected!")
+            if st.button("Disconnect"):
+                st.session_state["connections"][nav] = False
+                st.session_state["show_modal"] = None
+        if st.button("Close", key="close_modal"):
+            st.session_state["show_modal"] = None
 
+# ---- Section Cards (Only if connected) ----
+def section_card(title, links):
+    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
+    st.subheader(title)
+    c = st.columns(len(links))
+    for i, app in enumerate(links):
+        with c[i]:
+            st.image(app.get("logo", ""), width=48) if app.get("logo") else None
+            # If the section is "locked" and privacy ON, show disabled
+            if st.session_state["privacy"] and not st.session_state["connections"].get(app.get("nav", ""), True):
+                st.button(f"{app['name']}", disabled=True)
+            else:
+                st.markdown(f"<a class='app-link' href='{app['url']}' target='_blank'>{app['name']}</a>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+if all(st.session_state["connections"].values()):
+    # All key services connected: show everything!
+    # BANK
+    section_card("🏦 My Banks & Wallets", [
+        {"name": "Al Rajhi", "url": "https://www.alrajhibank.com.sa/", "logo": "https://www.alrajhibank.com.sa/content/dam/arbah/brand-assets/logo-en.svg"},
+        {"name": "STC Pay", "url": "https://www.stcpay.com.sa/", "logo": "https://www.stcpay.com.sa/themes/custom/stcpay/favicon.ico"},
+        {"name": "mada Pay", "url": "https://www.madapay.sa/", "logo": "https://www.madapay.sa/content/dam/madapay/logo.png"},
+    ])
+    # FOOD
+    section_card("🍔 My Food Apps", [
+        {"name": "HungerStation", "url": "https://hungerstation.com/", "logo": "https://seeklogo.com/images/H/hungerstation-logo-ACEE84CA6E-seeklogo.com.png"},
+        {"name": "Jahez", "url": "https://www.jahez.net/", "logo": "https://seeklogo.com/images/J/jahez-logo-7A9CBE733C-seeklogo.com.png"},
+        {"name": "Mrsool", "url": "https://www.mrsool.co/", "logo": "https://www.mrsool.co/images/mrsool_logo.svg"},
+    ])
+    # SOCIAL
+    section_card("💬 My Social Apps", [
+        {"name": "WhatsApp", "url": "https://wa.me/", "logo": "https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"},
+        {"name": "Snapchat", "url": "https://www.snapchat.com/add/", "logo": "https://upload.wikimedia.org/wikipedia/en/a/ad/Snapchat_logo.svg"},
+        {"name": "Instagram", "url": "https://instagram.com/", "logo": "https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png"},
+        {"name": "X (Twitter)", "url": "https://x.com/", "logo": "https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_of_Twitter.svg"},
+    ])
+    # DELIVERY
+    section_card("🚗 My Delivery Apps", [
+        {"name": "Uber", "url": "https://www.uber.com/sa/ar/", "logo": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png"},
+        {"name": "Careem", "url": "https://www.careem.com/", "logo": "https://logos-world.net/wp-content/uploads/2022/03/Careem-Logo.png"},
+    ])
+
+# Shopping, Government, Recharge, Bills, Wallet are always open (no connect needed)
+section_card("🛍️ Shopping", [
+    {"name": "Noon", "url": "https://www.noon.com/saudi-en/", "logo": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Noon.com_Logo.png"},
+    {"name": "Amazon.sa", "url": "https://www.amazon.sa/", "logo": "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg"},
+    {"name": "Jarir", "url": "https://www.jarir.com/", "logo": "https://www.jarir.com/images/jarir-logo-en.svg"},
+])
+section_card("🏛️ Government", [
+    {"name": "Absher", "url": "https://www.absher.sa/", "logo": "https://www.absher.sa/images/absher_logo.png"},
+    {"name": "Tawakkalna", "url": "https://ta.sdaia.gov.sa/", "logo": "https://ta.sdaia.gov.sa/favicon.ico"},
+    {"name": "Najm", "url": "https://www.najm.sa/", "logo": "https://www.najm.sa/assets/images/logo.svg"},
+])
+section_card("📱 Recharge", [
+    {"name": "STC", "url": "https://my.stc.com.sa/", "logo": ""},
+    {"name": "Mobily", "url": "https://shop.mobily.com.sa/", "logo": ""},
+    {"name": "Zain", "url": "https://www.sa.zain.com/", "logo": ""},
+])
+section_card("🧾 Bills", [
+    {"name": "Electricity", "url": "https://www.se.com.sa/", "logo": ""},
+    {"name": "Water", "url": "https://www.nwc.com.sa/", "logo": ""},
+])
+section_card("💳 Wallet", [
+    {"name": "Apple Pay", "url": "https://www.apple.com/apple-pay/", "logo": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg"},
+    {"name": "mada Pay", "url": "https://www.madapay.sa/", "logo": "https://www.madapay.sa/content/dam/madapay/logo.png"},
+])
