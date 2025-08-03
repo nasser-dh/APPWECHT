@@ -41,6 +41,7 @@ services = [
     {"name": "Wallet", "icon": "💳", "nav": "wallet"},
     {"name": "Food", "icon": "🍔", "nav": "food"},
     {"name": "Transport", "icon": "🚗", "nav": "rides"},
+    {"name": "Investment", "icon": "📈", "nav": "investment"},
     {"name": "Social", "icon": "💬", "nav": "chat"},
     {"name": "Shopping", "icon": "🛍️", "nav": "shopping"},
     {"name": "Government", "icon": "🏛️", "nav": "gov"},
@@ -103,7 +104,6 @@ if st.session_state["nav"] == "wallet":
     bank_cols = st.columns(len(banks))
     for i, bank in enumerate(banks):
         with bank_cols[i]:
-            # PNG/JPG logo only!
             if bank["logo"] and (bank["logo"].endswith(".png") or bank["logo"].endswith(".jpg") or bank["logo"].endswith(".jpeg")):
                 st.image(bank["logo"], width=60)
             if bank["user_field"] == "alrajhi_user":
@@ -206,6 +206,27 @@ elif st.session_state["nav"] == "rides":
     ridecols = st.columns(len(ride_apps))
     for i, app in enumerate(ride_apps):
         with ridecols[i]:
+            if app["logo"] and (app["logo"].endswith(".png") or app["logo"].endswith(".jpg")):
+                st.image(app["logo"], width=60)
+            st.markdown(f"[{app['name']}]({app['url']})", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+elif st.session_state["nav"] == "investment":
+    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
+    st.subheader("📈 Investment & Real Estate Apps")
+    investment_apps = [
+        {"name": "Tadawul", "url": "https://www.saudiexchange.sa/", "logo": "https://play-lh.googleusercontent.com/hBcAFvIjF9HjG4qJiyXkNchpHzQmWAVnEFDPXUuWiDNmlZ2v8ZZ8NnVoF6sJ3kUQ6w=w240-h480-rw"},
+        {"name": "Alinma Investment", "url": "https://www.alinmainvestment.com.sa/", "logo": "https://play-lh.googleusercontent.com/wfNQAuXARlTQ9u4SxfI4jVaMUkqxKQYzmLbQOmoU_Emy5Qp4QmsuLq6kJtWGGmc6I6A=w240-h480-rw"},
+        {"name": "SNB Capital", "url": "https://www.alahlicapital.com/", "logo": "https://pbs.twimg.com/profile_images/1490789251093942278/LNEaTnhO_400x400.jpg"},
+        {"name": "Al Rajhi Capital", "url": "https://www.alrajhi-capital.com.sa/", "logo": "https://www.alrajhi-capital.com.sa/content/dam/arc/en/arc-logo.png"},
+        {"name": "Derayah", "url": "https://www.derayah.com/", "logo": "https://www.derayah.com/wp-content/uploads/2023/02/Derayah-Logo.png"},
+        {"name": "Sakani", "url": "https://sakani.sa/", "logo": "https://play-lh.googleusercontent.com/U5nLHZFQX1bKaGFaROJPSsEb3Wcltm__7p7-gcnXFWsKUhe0yroBkbFQGrdZZ11NwA=w240-h480-rw"},
+        {"name": "Sukuk (Sakook)", "url": "https://www.sukuk.sa/", "logo": "https://pbs.twimg.com/profile_images/1507694261615781890/SgPU5El7_400x400.jpg"},
+        {"name": "Emkan Finance", "url": "https://emkanfinance.com.sa/", "logo": "https://play-lh.googleusercontent.com/ytchDa5ZW9c5KgU_jN5O2M-ALANxTi6yE6E1-OSpNUL7I3_7XtWcQpL0nMI-C_0hYw=w240-h480-rw"},
+    ]
+    invest_cols = st.columns(len(investment_apps))
+    for i, app in enumerate(investment_apps):
+        with invest_cols[i]:
             if app["logo"] and (app["logo"].endswith(".png") or app["logo"].endswith(".jpg")):
                 st.image(app["logo"], width=60)
             st.markdown(f"[{app['name']}]({app['url']})", unsafe_allow_html=True)
