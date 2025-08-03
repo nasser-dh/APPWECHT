@@ -1,5 +1,4 @@
 import streamlit as st
-from datetime import datetime
 
 st.set_page_config(page_title="Saudi SuperApp", layout="wide", initial_sidebar_state="collapsed")
 PRIMARY = "#009966"
@@ -24,12 +23,12 @@ st.markdown(
         }}
     </style>
     """,
-    unsafe_allow_html=True,
+    unsafe_allow_html=True
 )
 
 # ----- STATE -----
 if "nav" not in st.session_state:
-    st.session_state["nav"] = "home"
+    st.session_state["nav"] = "wallet"
 
 # ----- SERVICES -----
 services = [
@@ -196,4 +195,15 @@ elif st.session_state["nav"] == "bills":
     st.markdown('</div>', unsafe_allow_html=True)
 
 elif st.session_state["nav"] == "recharge":
-    st.markdown('<div class="wechat-card">', un
+    st.markdown('<div class="wechat-card">', unsafe_allow_html=True)
+    st.subheader("📱 Mobile Recharge")
+    telcos = [
+        {"name": "STC", "url": "https://my.stc.com.sa/"},
+        {"name": "Mobily", "url": "https://shop.mobily.com.sa/"},
+        {"name": "Zain", "url": "https://www.sa.zain.com/"},
+    ]
+    t_cols = st.columns(len(telcos))
+    for i, t in enumerate(telcos):
+        with t_cols[i]:
+            st.markdown(f"[{t['name']}]({t['url']})", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
